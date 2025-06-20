@@ -1,20 +1,29 @@
+cache:
+  key: poetry-deps
+  paths:
+    - .venv
+
 stages:
-  - lint
-  - test
+  - validate
+  - release
 
 lint-job:
-  stage: lint
-  image: python:3.13
+  stage: validate
+  image: python:3.12-slim
   script:
-    - pip install black isort pyright
-    - black --check --diff . || FAILED=1
-    - isort --check-only . || FAILED=1
-    - pyright || FAILED=1
+    - pip install poetry
+    - poetry config virtualenvs.in-project true
+    - poetry install
+    - poetry run black --check --diff . || FAILED=1
+    - poetry run isort --profile=black --check-only . || FAILED=1
+    - poetry run pyright || FAILED=1
     - if [[ $FAILED = 1 ]]; then exit 1; fi
 
 unit-test-job:
-  stage: lint
-  image: python:3.13
+  stage: validate
+  image: python:3.12-slim
   script:
-    - pip install -r requirements.txt
-    - python -m unittest discover -s tests -p "test_*.py"
+    - pip install poetry
+    - poetry config virtualenvs.in-project true
+    - poetry install
+    - poetry run python -m unittest discover -s tests -p "test_*.py"
