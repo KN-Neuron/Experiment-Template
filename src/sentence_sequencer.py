@@ -13,6 +13,10 @@ from data_acquisition.screens import BlankScreen, FixationCrossScreen, TextScree
 from data_acquisition.sequencers import SimpleScreenSequencer
 
 from .config import Config
+from .constants import (
+    NON_SENTENCE_SCREEN_BACKGROUND_COLOR,
+    NON_SENTENCE_SCREEN_TEXT_COLOR,
+)
 
 
 class SentenceSequencer(SimpleScreenSequencer[None]):
@@ -41,9 +45,17 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
             timeout_millis=config.relax_screen_timeout_millis
         )
 
-        self._pause_screen = TextScreen(gui=self._gui, text=config.pause_screen_text)
+        self._pause_screen = TextScreen(
+            gui=self._gui,
+            text=config.pause_screen_text,
+            text_color=NON_SENTENCE_SCREEN_TEXT_COLOR,
+            background_color=NON_SENTENCE_SCREEN_BACKGROUND_COLOR,
+        )
         self._continue_screen = TextScreen(
-            gui=self._gui, text=config.continue_screen_text
+            gui=self._gui,
+            text=config.continue_screen_text,
+            text_color=NON_SENTENCE_SCREEN_TEXT_COLOR,
+            background_color=NON_SENTENCE_SCREEN_BACKGROUND_COLOR,
         )
 
         self._was_first_screen_shown = False
@@ -125,6 +137,8 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
 
     def _get_pause_screen(self) -> EventfulScreen[None]:
         self._was_paused = False
+
+        self._index -= 1
 
         pause_event_manager = self._pause_unpause_event_manager.clone()
         pause_event_manager.register_callback(
