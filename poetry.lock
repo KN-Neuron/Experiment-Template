@@ -90,7 +90,7 @@ test = ["nose"]
 
 [[package]]
 name = "data-acquisition-framework"
-version = "0.4.0"
+version = "0.2.0"
 description = ""
 optional = false
 python-versions = ">=3.12"
@@ -105,8 +105,8 @@ pygame = ">=2.6.1,<3.0.0"
 [package.source]
 type = "git"
 url = "ssh://git@gitlab.com/kn-neuron/neuroguard/data-acquisition-framework.git"
-reference = "v0.1.0"
-resolved_reference = "db2cb5bbb12e9d45948964fbcc0715f38c2b0309"
+reference = "v0.2.0"
+resolved_reference = "bbdf2b5c263306d7b979bb01a8f53ef461de54d9"
 
 [[package]]
 name = "isort"
@@ -295,4 +295,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "4d14c13a48d78301875450212d899d52ab590823d43f5ae43e5d3e86d7153596"
+content-hash = "019d204cfcd06680f4e3529eca3d7ef998a90b9dcef8e9de91f6486fe3109019"
