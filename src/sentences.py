@@ -12,11 +12,11 @@ class Sentences:
 def load_sentences() -> Sentences:
     assets_dir = Path(__file__).parent / "assets"
 
-    with open(assets_dir / "pl.txt", "r") as file:
+    with open(assets_dir / "pl.txt", "r", encoding="utf-8") as file:
         polish_sentences = file.read().splitlines()
     random.shuffle(polish_sentences)
 
-    with open(assets_dir / "en.txt", "r") as file:
+    with open(assets_dir / "en.txt", "r", encoding="utf-8") as file:
         english_sentences = file.read().splitlines()
     random.shuffle(english_sentences)
 
