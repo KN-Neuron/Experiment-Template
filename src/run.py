@@ -6,18 +6,22 @@ from data_acquisition.experiment_runner import ExperimentRunner
 from data_acquisition.gui import PygameGui
 from data_acquisition.gui.display_mode import FullscreenDisplayMode, WindowedDisplayMode
 
-from src.app_sequencer_builder import AppSequencerBuilder
-from src.config import Config
-from src.constants import RELAX_SCREEN_TIMEOUT_MILLIS, SENTENCES_IN_BLOCK_COUNT
-
-DEBUG_SENTENCES_IN_BLOCK_COUNT = 3
-DEBUG_RELAX_SCREEN_TIMEOUT_MILLIS = 5 * 1000
+from .app_sequencer_builder import AppSequencerBuilder
+from .config import Config
+from .constants import (
+    BLOCK_COUNT,
+    DEBUG_BLOCK_COUNT,
+    DEBUG_RELAX_SCREEN_TIMEOUT_MILLIS,
+    DEBUG_SENTENCES_IN_BLOCK_COUNT,
+    RELAX_SCREEN_TIMEOUT_MILLIS,
+    SENTENCES_IN_BLOCK_COUNT,
+)
 
 
 def run(
     *,
     brainaccess_cap_name: str,
-    do_make_it_quicker: bool = False,
+    do_use_debug_mode: bool = False,
     do_use_mock_headset: bool = False,
 ) -> None:
     if do_use_mock_headset:
@@ -39,20 +43,21 @@ def run(
 
     display_mode = (
         WindowedDisplayMode(width=800, height=600)
-        if do_make_it_quicker
+        if do_use_debug_mode
         else FullscreenDisplayMode()
     )
     gui = PygameGui(display_mode=display_mode, window_title="NeuroGuard")
 
     config = Config(
+        block_count=(DEBUG_BLOCK_COUNT if do_use_debug_mode else BLOCK_COUNT),
         sentence_count=(
             DEBUG_SENTENCES_IN_BLOCK_COUNT
-            if do_make_it_quicker
+            if do_use_debug_mode
             else SENTENCES_IN_BLOCK_COUNT
         ),
         relax_screen_timeout_millis=(
             DEBUG_RELAX_SCREEN_TIMEOUT_MILLIS
-            if do_make_it_quicker
+            if do_use_debug_mode
             else RELAX_SCREEN_TIMEOUT_MILLIS
         ),
     )

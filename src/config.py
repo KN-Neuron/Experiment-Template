@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from data_acquisition.gui.event_types import Key
 
 from .constants import (
+    BLOCK_COUNT,
     CONTINUE_SCREEN_ADVANCE_KEY,
     CONTINUE_SCREEN_TEXT,
     FIXATION_CROSS_TIMEOUT_RANGE_MILLIS,
@@ -27,6 +28,7 @@ fixation_cross_timeout_range_start_millis, fixation_cross_timeout_range_end_mill
 
 @dataclass
 class Config:
+    block_count: int = BLOCK_COUNT
     sentence_count: int = SENTENCES_IN_BLOCK_COUNT
 
     do_show_continue_screen: bool = True

@@ -46,7 +46,7 @@ class AppSequencerBuilder:
 
         sentences_in_blocks = itertools.islice(
             itertools.cycle([sentences.polish, sentences.english]),
-            self._config.sentence_count,
+            self._config.block_count,
         )
 
         for idx, sentences_in_block in enumerate(sentences_in_blocks):
