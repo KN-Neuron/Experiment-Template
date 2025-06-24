@@ -129,7 +129,7 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
         pause_event_manager = self._pause_unpause_event_manager.clone()
         pause_event_manager.register_callback(
             lambda _: self._eeg_headset.annotate(
-                self._config.pause_screen_start_annotation
+                self._config.pause_screen_end_annotation
             )
         )
 
@@ -137,7 +137,7 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
             screen=self._pause_screen,
             event_manager=pause_event_manager,
             screen_show_callback=lambda: self._eeg_headset.annotate(
-                self._config.pause_screen_end_annotation
+                self._config.pause_screen_start_annotation
             ),
         )
 
