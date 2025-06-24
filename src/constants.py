@@ -1,9 +1,13 @@
+from colour import Color
 from data_acquisition.gui.event_types import Key
 
 BLOCK_COUNT = 6
 DEBUG_BLOCK_COUNT = 2
 SENTENCES_IN_BLOCK_COUNT = 50
 DEBUG_SENTENCES_IN_BLOCK_COUNT = 3
+
+NON_SENTENCE_SCREEN_BACKGROUND_COLOR = Color("black")
+NON_SENTENCE_SCREEN_TEXT_COLOR = Color("white")
 
 CONTINUE_SCREEN_ADVANCE_KEY = Key.SPACE
 CONTINUE_SCREEN_TEXT = "Naciśnij SPACJĘ, aby kontynuować badanie."
