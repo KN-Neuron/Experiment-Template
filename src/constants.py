@@ -1,5 +1,10 @@
+from pathlib import Path
+
 from colour import Color
 from data_acquisition.gui.event_types import Key
+
+SURVEY_CONFIG_PATH = Path("survey.yml")
+SURVEY_PARTICIPANT_ID_KEY = "participant_id"
 
 BLOCK_COUNT = 6
 DEBUG_BLOCK_COUNT = 2

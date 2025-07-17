@@ -1,10 +1,11 @@
-from datetime import datetime
 from threading import Thread
+from typing import cast
 
 from data_acquisition.eeg_headset import MockEEGHeadset
 from data_acquisition.experiment_runner import ExperimentRunner
 from data_acquisition.gui import PygameGui
 from data_acquisition.gui.display_mode import FullscreenDisplayMode, WindowedDisplayMode
+from data_acquisition.pre_experiment_survey import PreExperimentSurvey
 
 from .app_sequencer_builder import AppSequencerBuilder
 from .config import Config
@@ -15,6 +16,8 @@ from .constants import (
     DEBUG_SENTENCES_IN_BLOCK_COUNT,
     RELAX_SCREEN_TIMEOUT_MILLIS,
     SENTENCES_IN_BLOCK_COUNT,
+    SURVEY_CONFIG_PATH,
+    SURVEY_PARTICIPANT_ID_KEY,
 )
 
 
@@ -37,9 +40,9 @@ def run(
             device_channels=BRAINACCESS_MAXI_32_CHANNEL,
         )
 
-    participant_id = datetime.now().strftime(
-        "%Y%m%d_%H%M%S"
-    )  # TODO: zamienic na ID z ankiety
+    survey = PreExperimentSurvey(config_file_path=SURVEY_CONFIG_PATH)
+    responses = survey.start_and_get_responses()
+    participant_id = cast(str, responses.get(SURVEY_PARTICIPANT_ID_KEY))
 
     display_mode = (
         WindowedDisplayMode(width=800, height=600)
