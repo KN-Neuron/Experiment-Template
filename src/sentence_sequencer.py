@@ -1,3 +1,5 @@
+from logging import Logger
+
 from data_acquisition.eeg_headset import EEGHeadset
 from data_acquisition.event_manager import (
     CompositeEventManager,
@@ -21,16 +23,23 @@ from .constants import (
 
 class SentenceSequencer(SimpleScreenSequencer[None]):
     def __init__(
-        self, *, gui: Gui, eeg_headset: EEGHeadset, config: Config, sentences: list[str]
+        self,
+        *,
+        gui: Gui,
+        eeg_headset: EEGHeadset,
+        config: Config,
+        sentences: list[str],
+        logger: Logger,
     ):
-        super().__init__(gui=gui)
+        super().__init__(gui=gui, logger=logger)
 
         self._sentences = sentences
         self._eeg_headset = eeg_headset
         self._config = config
+        self._logger = logger
 
         self._continue_screen_event_manager = KeyPressEventManager(
-            gui=self._gui, key=config.continue_screen_advance_key
+            gui=self._gui, key=config.continue_screen_advance_key, logger=logger
         )
         self._build_sentence_screen_event_manager(
             advance_key=config.sentence_screen_advance_key,
@@ -70,13 +79,16 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
         advance_key: Key,
         timeout_millis: int,
     ) -> None:
-        key_event_manager = KeyPressEventManager(gui=self._gui, key=advance_key)
+        key_event_manager = KeyPressEventManager(
+            gui=self._gui, key=advance_key, logger=self._logger
+        )
         timeout_event_manager = FixedTimeoutEventManager(
-            gui=self._gui, timeout_millis=timeout_millis
+            gui=self._gui, timeout_millis=timeout_millis, logger=self._logger
         )
 
         self._sentence_screen_event_manager = CompositeEventManager(
-            event_managers=[key_event_manager, timeout_event_manager]
+            event_managers=[key_event_manager, timeout_event_manager],
+            logger=self._logger,
         )
         self._sentence_screen_event_manager.register_callback(
             lambda _: self._eeg_headset.annotate(
@@ -91,14 +103,17 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
             gui=self._gui,
             timeout_min_millis=timeout_range_start_millis,
             timeout_max_millis=timeout_range_end_millis,
+            logger=self._logger,
         )
 
     def _build_pause_unpause_event_manager(self, *, key: Key) -> None:
-        self._pause_unpause_event_manager = KeyPressEventManager(gui=self._gui, key=key)
+        self._pause_unpause_event_manager = KeyPressEventManager(
+            gui=self._gui, key=key, logger=self._logger
+        )
 
     def _build_relax_screen_event_manager(self, *, timeout_millis: int) -> None:
         self._relax_screen_event_manager = FixedTimeoutEventManager(
-            gui=self._gui, timeout_millis=timeout_millis
+            gui=self._gui, timeout_millis=timeout_millis, logger=self._logger
         )
 
         self._relax_screen_event_manager.register_callback(
@@ -213,7 +228,8 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
         pause_event_manager.register_callback(self._mark_as_paused)
 
         pause_screen_event_manager = CompositeEventManager(
-            event_managers=[pause_event_manager, event_manager.clone()]
+            event_managers=[pause_event_manager, event_manager.clone()],
+            logger=self._logger,
         )
 
         return pause_screen_event_manager

@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from colour import Color
@@ -5,6 +6,10 @@ from data_acquisition.gui.event_types import Key
 
 SURVEY_CONFIG_PATH = Path("survey.yml")
 SURVEY_PARTICIPANT_ID_KEY = "participant_id"
+
+LOGGING_LEVEL = logging.INFO
+LOGGING_MESSAGE_FORMAT = "%(asctime)s - %(message)s"
+LOGGING_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 BLOCK_COUNT = 6
 DEBUG_BLOCK_COUNT = 2
