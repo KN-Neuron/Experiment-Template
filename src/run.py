@@ -40,6 +40,7 @@ def run(
     logger.setLevel(LOGGING_LEVEL)
     (Path().cwd() / "logs").mkdir(exist_ok=True)
     handler = logging.FileHandler(f"logs/{participant_id}.log")
+    handler.setLevel(LOGGING_LEVEL)
     formatter = logging.Formatter(
         LOGGING_MESSAGE_FORMAT, datefmt=LOGGING_DATETIME_FORMAT
     )
