@@ -219,6 +219,8 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
             ),
         )
 
+        self._logger.info(f"Showing screen with sentence: {text}")
+
         return screen
 
     def _get_event_manager_with_pause(
