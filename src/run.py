@@ -39,12 +39,13 @@ def run(
     logger = logging.getLogger()
     logger.setLevel(LOGGING_LEVEL)
     (Path().cwd() / "logs").mkdir(exist_ok=True)
-    handler = logging.FileHandler(f"logs/{participant_id}.log")
+    handler = logging.FileHandler(f"logs/{participant_id}.log", encoding="utf-8")
     handler.setLevel(LOGGING_LEVEL)
     formatter = logging.Formatter(
         LOGGING_MESSAGE_FORMAT, datefmt=LOGGING_DATETIME_FORMAT
     )
     handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
     if do_use_mock_headset:
         headset = MockEEGHeadset(logger=logger)
