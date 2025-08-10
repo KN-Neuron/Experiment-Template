@@ -1,0 +1,12 @@
+Installing dependencies from lock file
+
+Package operations: 5 installs, 0 updates, 0 removals
+
+  - Installing pathspec (0.12.1)
+  - Installing black (25.1.0)
+  - Installing isort (6.0.1)
+  - Installing pyright (1.1.402)
+  - Installing data-acquisition-framework (0.2.0 bbdf2b5)
+
+Installing the current project: experiment-app (0.1.0)
+
