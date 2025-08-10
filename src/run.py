@@ -1,10 +1,13 @@
-from datetime import datetime
+import logging
+from pathlib import Path
 from threading import Thread
+from typing import cast
 
 from data_acquisition.eeg_headset import MockEEGHeadset
 from data_acquisition.experiment_runner import ExperimentRunner
 from data_acquisition.gui import PygameGui
 from data_acquisition.gui.display_mode import FullscreenDisplayMode, WindowedDisplayMode
+from data_acquisition.pre_experiment_survey import PreExperimentSurvey
 
 from .app_sequencer_builder import AppSequencerBuilder
 from .config import Config
@@ -13,8 +16,13 @@ from .constants import (
     DEBUG_BLOCK_COUNT,
     DEBUG_RELAX_SCREEN_TIMEOUT_MILLIS,
     DEBUG_SENTENCES_IN_BLOCK_COUNT,
+    LOGGING_DATETIME_FORMAT,
+    LOGGING_LEVEL,
+    LOGGING_MESSAGE_FORMAT,
     RELAX_SCREEN_TIMEOUT_MILLIS,
     SENTENCES_IN_BLOCK_COUNT,
+    SURVEY_CONFIG_PATH,
+    SURVEY_PARTICIPANT_ID_KEY,
 )
 
 
@@ -24,8 +32,23 @@ def run(
     do_use_debug_mode: bool = False,
     do_use_mock_headset: bool = False,
 ) -> None:
+    survey = PreExperimentSurvey(config_file_path=SURVEY_CONFIG_PATH)
+    responses = survey.start_and_get_responses()
+    participant_id = cast(str, responses.get(SURVEY_PARTICIPANT_ID_KEY))
+
+    logger = logging.getLogger()
+    logger.setLevel(LOGGING_LEVEL)
+    (Path().cwd() / "logs").mkdir(exist_ok=True)
+    handler = logging.FileHandler(f"logs/{participant_id}.log", encoding="utf-8")
+    handler.setLevel(LOGGING_LEVEL)
+    formatter = logging.Formatter(
+        LOGGING_MESSAGE_FORMAT, datefmt=LOGGING_DATETIME_FORMAT
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
     if do_use_mock_headset:
-        headset = MockEEGHeadset()
+        headset = MockEEGHeadset(logger=logger)
     else:
         from data_acquisition.eeg_headset.brainaccess import BrainAccessV3Headset
         from data_acquisition.eeg_headset.brainaccess.devices import (
@@ -35,18 +58,15 @@ def run(
         headset = BrainAccessV3Headset(
             device_name=brainaccess_cap_name,
             device_channels=BRAINACCESS_MAXI_32_CHANNEL,
+            logger=logger,
         )
-
-    participant_id = datetime.now().strftime(
-        "%Y%m%d_%H%M%S"
-    )  # TODO: zamienic na ID z ankiety
 
     display_mode = (
         WindowedDisplayMode(width=800, height=600)
         if do_use_debug_mode
         else FullscreenDisplayMode()
     )
-    gui = PygameGui(display_mode=display_mode, window_title="NeuroGuard")
+    gui = PygameGui(display_mode=display_mode, window_title="NeuroGuard", logger=logger)
 
     config = Config(
         block_count=(DEBUG_BLOCK_COUNT if do_use_debug_mode else BLOCK_COUNT),
@@ -63,12 +83,16 @@ def run(
     )
 
     app_sequencer_builder = AppSequencerBuilder(
-        gui=gui, config=config, headset=headset, participant_id=participant_id
+        gui=gui,
+        config=config,
+        headset=headset,
+        participant_id=participant_id,
+        logger=logger,
     )
     sequencer = app_sequencer_builder.set_up_app_sequencer()
 
     runner = ExperimentRunner(
-        gui=gui, screen_sequencer=sequencer, end_callback=gui.stop
+        gui=gui, screen_sequencer=sequencer, end_callback=gui.stop, logger=logger
     )
 
     Thread(target=runner.run).start()

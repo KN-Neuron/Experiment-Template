@@ -1,5 +1,6 @@
 import itertools
 from copy import copy
+from logging import Logger
 from pathlib import Path
 from typing import Sequence
 
@@ -14,12 +15,19 @@ from .sentences import Sentences, load_sentences
 
 class AppSequencerBuilder:
     def __init__(
-        self, *, gui: Gui, config: Config, headset: EEGHeadset, participant_id: str
+        self,
+        *,
+        gui: Gui,
+        config: Config,
+        headset: EEGHeadset,
+        participant_id: str,
+        logger: Logger,
     ):
         self._gui = gui
         self._config = config
         self._headset = headset
         self._participant_id = participant_id
+        self._logger = logger
 
     def set_up_app_sequencer(self) -> ScreenSequencer[None]:
         self._set_up_save_directory()
@@ -33,6 +41,7 @@ class AppSequencerBuilder:
             block_end_callback=lambda block_number: self._headset.stop_and_save_at_path(
                 self._eeg_save_dir / f"{block_number}_raw.fif"
             ),
+            logger=self._logger,
         )
 
     def _set_up_save_directory(self) -> None:
@@ -58,6 +67,7 @@ class AppSequencerBuilder:
                 eeg_headset=self._headset,
                 config=config,
                 sentences=sentences_in_block,
+                logger=self._logger,
             )
 
             sequencers.append(sequencer)
