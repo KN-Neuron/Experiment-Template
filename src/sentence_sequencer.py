@@ -41,6 +41,10 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
         self._continue_screen_event_manager = KeyPressEventManager(
             gui=self._gui, key=config.continue_screen_advance_key, logger=logger
         )
+        self._continue_screen_event_manager.register_callback(
+            lambda _: self._logger.info("pause end - participant pressed continue key")
+        )
+
         self._build_sentence_screen_event_manager(
             advance_key=config.sentence_screen_advance_key,
             timeout_millis=config.sentence_screen_timeout_millis,
@@ -82,8 +86,17 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
         key_event_manager = KeyPressEventManager(
             gui=self._gui, key=advance_key, logger=self._logger
         )
+        key_event_manager.register_callback(
+            lambda _: self._logger.info(
+                "sentence end - participant pressed continue key"
+            )
+        )
+
         timeout_event_manager = FixedTimeoutEventManager(
             gui=self._gui, timeout_millis=timeout_millis, logger=self._logger
+        )
+        timeout_event_manager.register_callback(
+            lambda _: self._logger.info("sentence end - timeout")
         )
 
         self._sentence_screen_event_manager = CompositeEventManager(
@@ -105,6 +118,9 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
             timeout_max_millis=timeout_range_end_millis,
             logger=self._logger,
         )
+        self._fixation_cross_screen_event_manager.register_callback(
+            lambda _: self._logger.info("fixation cross end")
+        )
 
     def _build_pause_unpause_event_manager(self, *, key: Key) -> None:
         self._pause_unpause_event_manager = KeyPressEventManager(
@@ -115,12 +131,13 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
         self._relax_screen_event_manager = FixedTimeoutEventManager(
             gui=self._gui, timeout_millis=timeout_millis, logger=self._logger
         )
-
         self._relax_screen_event_manager.register_callback(
-            lambda _: self._eeg_headset.annotate(
-                self._config.relax_screen_end_annotation
-            )
+            self._relax_screen_end_callback
         )
+
+    def _relax_screen_end_callback(self, _: None) -> None:
+        self._eeg_headset.annotate(self._config.relax_screen_end_annotation)
+        self._logger.info("relax end")
 
     def _get_next(self) -> EventfulScreen[None]:
         if not self._was_first_screen_shown and self._config.do_show_continue_screen:
@@ -146,6 +163,7 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
         screen = EventfulScreen(
             screen=continue_screen,
             event_manager=self._continue_screen_event_manager.clone(),
+            screen_show_callback=lambda: self._logger.info("pause start"),
         )
 
         return screen
@@ -180,15 +198,19 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
 
         relax_screen = BlankScreen(gui=self._gui)
 
+        relax_screen_event_manager = self._relax_screen_event_manager.clone()
+
         screen = EventfulScreen(
             screen=relax_screen,
-            event_manager=self._relax_screen_event_manager.clone(),
-            screen_show_callback=lambda: self._eeg_headset.annotate(
-                self._config.relax_screen_start_annotation
-            ),
+            event_manager=relax_screen_event_manager,
+            screen_show_callback=self._relax_screen_start_callback,
         )
 
         return screen
+
+    def _relax_screen_start_callback(self) -> None:
+        self._eeg_headset.annotate(self._config.relax_screen_start_annotation)
+        self._logger.info("relax start")
 
     def _get_fixation_cross_screen(self) -> EventfulScreen[None]:
         self._was_fixation_cross_shown = True
@@ -197,7 +219,11 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
         event_manager = self._get_event_manager_with_pause(
             self._fixation_cross_screen_event_manager
         )
-        screen = EventfulScreen(screen=screen, event_manager=event_manager)
+        screen = EventfulScreen(
+            screen=screen,
+            event_manager=event_manager,
+            screen_show_callback=lambda: self._logger.info("fixation cross start"),
+        )
 
         return screen
 
@@ -214,14 +240,14 @@ class SentenceSequencer(SimpleScreenSequencer[None]):
         screen = EventfulScreen(
             screen=screen,
             event_manager=event_manager,
-            screen_show_callback=lambda: self._eeg_headset.annotate(
-                self._config.sentence_screen_start_annotation
-            ),
+            screen_show_callback=lambda: self._sentence_screen_show_callback(text),
         )
 
-        self._logger.info(f"Showing screen with sentence: {text}")
-
         return screen
+
+    def _sentence_screen_show_callback(self, text: str) -> None:
+        self._eeg_headset.annotate(self._config.sentence_screen_start_annotation)
+        self._logger.info(f"sentence start - {text}")
 
     def _get_event_manager_with_pause(
         self, event_manager: EventManager[None]

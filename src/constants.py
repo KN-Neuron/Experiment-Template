@@ -8,7 +8,7 @@ SURVEY_CONFIG_PATH = Path("survey.yml")
 SURVEY_PARTICIPANT_ID_KEY = "participant_id"
 
 LOGGING_LEVEL = logging.INFO
-LOGGING_MESSAGE_FORMAT = "%(asctime)s - %(message)s"
+LOGGING_MESSAGE_FORMAT = "%(asctime)s.%(msecs)03d - %(message)s"
 LOGGING_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 BLOCK_COUNT = 6
@@ -18,6 +18,9 @@ DEBUG_SENTENCES_IN_BLOCK_COUNT = 3
 
 NON_SENTENCE_SCREEN_BACKGROUND_COLOR = Color("black")
 NON_SENTENCE_SCREEN_TEXT_COLOR = Color("white")
+
+START_EXPRIMENT_SCREEN_ADVANCE_KEY = Key.SPACE
+START_EXPRIMENT_SCREEN_TEXT = "Naciśnij SPACJĘ, aby rozpocząć badanie."
 
 CONTINUE_SCREEN_ADVANCE_KEY = Key.SPACE
 CONTINUE_SCREEN_TEXT = "Naciśnij SPACJĘ, aby kontynuować badanie."
