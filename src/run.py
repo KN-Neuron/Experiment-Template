@@ -92,8 +92,10 @@ def run(
     sequencer = app_sequencer_builder.set_up_app_sequencer()
 
     runner = ExperimentRunner(
-        gui=gui, screen_sequencer=sequencer, end_callback=gui.stop, logger=logger
+        gui=gui, screen_sequencer=sequencer, end_callback=gui.stop
     )
 
     Thread(target=runner.run).start()
     gui.start()
+
+    headset.disconnect()

@@ -2,13 +2,25 @@ import itertools
 from copy import copy
 from logging import Logger
 from pathlib import Path
-from typing import Sequence
 
 from data_acquisition.eeg_headset import EEGHeadset
+from data_acquisition.event_manager import KeyPressEventManager
+from data_acquisition.eventful_screen import EventfulScreen
 from data_acquisition.gui import Gui
-from data_acquisition.sequencers import BlockScreenSequencer, ScreenSequencer
+from data_acquisition.screens import TextScreen
+from data_acquisition.sequencers import (
+    BlockScreenSequencer,
+    PredefinedScreenSequencer,
+    ScreenSequencer,
+)
 
 from .config import Config
+from .constants import (
+    NON_SENTENCE_SCREEN_BACKGROUND_COLOR,
+    NON_SENTENCE_SCREEN_TEXT_COLOR,
+    START_EXPRIMENT_SCREEN_ADVANCE_KEY,
+    START_EXPRIMENT_SCREEN_TEXT,
+)
 from .sentence_sequencer import SentenceSequencer
 from .sentences import Sentences, load_sentences
 
@@ -35,6 +47,13 @@ class AppSequencerBuilder:
         sentences = load_sentences()
         sequencers = self._build_sequencers_from_sentences(sentences)
 
+        start_experiment_screen_sequencer = (
+            self._build_start_experiment_screen_sequencer()
+        )
+        sequencers[0] = BlockScreenSequencer(
+            sequencers=[start_experiment_screen_sequencer, sequencers[0]]
+        )
+
         return BlockScreenSequencer(
             sequencers=sequencers,
             block_start_callback=lambda _: self._headset.start(),
@@ -50,7 +69,7 @@ class AppSequencerBuilder:
 
     def _build_sequencers_from_sentences(
         self, sentences: Sentences
-    ) -> Sequence[ScreenSequencer[None]]:
+    ) -> list[ScreenSequencer[None]]:
         sequencers: list[ScreenSequencer[None]] = []
 
         sentences_in_blocks = itertools.islice(
@@ -73,3 +92,26 @@ class AppSequencerBuilder:
             sequencers.append(sequencer)
 
         return sequencers
+
+    def _build_start_experiment_screen_sequencer(
+        self,
+    ) -> PredefinedScreenSequencer[None]:
+        screen = TextScreen(
+            gui=self._gui,
+            text=START_EXPRIMENT_SCREEN_TEXT,
+            text_color=NON_SENTENCE_SCREEN_TEXT_COLOR,
+            background_color=NON_SENTENCE_SCREEN_BACKGROUND_COLOR,
+        )
+
+        event_manager = KeyPressEventManager(
+            gui=self._gui, key=START_EXPRIMENT_SCREEN_ADVANCE_KEY
+        )
+        event_manager.register_callback(
+            lambda _: self._logger.info(
+                "experiment start - participant pressed start key"
+            )
+        )
+
+        eventful_screen = EventfulScreen(screen=screen, event_manager=event_manager)
+
+        return PredefinedScreenSequencer(screens=[eventful_screen], logger=self._logger)
